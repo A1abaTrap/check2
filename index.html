@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Random & Tính Toán</title>
+
 </head>
 <body>
     <h1>Form Random & Tính Toán</h1>
@@ -53,24 +54,28 @@
         <input type="text" id="tongSoMa" readonly>
     </div>
     <div>
-        <label for="soKgThuc">Số Kg Thực:</label>
-        <input type="text" id="soKgThuc" readonly>
+        <label for="tongSokg">Tổng Số Kg:</label>
+        <input type="text" id="tongSokg" readonly>
     </div>
     <div>
         <label for="trubi">Tỷ Trừ Bì:</label>
         <input type="text" id="trubi" readonly>
     </div>
       <div>
-        <label for="ketQuaSoKgChet">Số Kg Chết (Hiển thị):</label>
+        <label for="ketQuaSoKgChet">Số Kg Chết:</label>
         <input type="text" id="ketQuaSoKgChet" readonly>
     </div>
       <div>
-        <label for="ketQuaSoKgUot">Số Kg Ướt (Hiển thị):</label>
+        <label for="ketQuaSoKgUot">Số Kg Ướt:</label>
         <input type="text" id="ketQuaSoKgUot" readonly>
     </div>
       <div>
-        <label for="ketQuaSoKgNo">Số Kg No (Hiển thị):</label>
+        <label for="ketQuaSoKgNo">Số Kg No:</label>
         <input type="text" id="ketQuaSoKgNo" readonly>
+    </div>
+      <div>
+        <label for="soKgThuc">Số Kg Thực:</label>
+        <input type="text" id="soKgThuc" readonly>
     </div>
     <div>
         <label for="tyLeHaoHut">Tỷ Lệ Hao Hụt (%):</label>
@@ -80,7 +85,7 @@
     <!-- Nút Random và Refresh -->
     <div>
         <button id="btnRandom">Random Danh Sách</button>
-        <button id="btnRefresh">Refresh Danh Sách</button>
+        <button id="btnRefresh">Tính Lại Kết Quả</button>
     </div>
 
     <!-- Script xử lý random và tính toán -->
@@ -94,13 +99,15 @@
         const soKgNoInput = document.getElementById('soKgNo');
         const soRandomInput = document.getElementById('soRandom');
         const tongSoMaInput = document.getElementById('tongSoMa');
+        const tongSokgInput = document.getElementById('tongSokg');
         const soKgThucInput = document.getElementById('soKgThuc');
         const trubiInput = document.getElementById('trubi');
         const tyLeHaoHutInput = document.getElementById('tyLeHaoHut');
         const btnRandom = document.getElementById('btnRandom');
         const btnRefresh = document.getElementById('btnRefresh');
 
-function randomDanhSach() {
+// Random danh sách và tính toán
+function randomDanhSachVaTinhToan() {
     const soBatDau = parseInt(soBatDauInput.value) || 0;
     const soKetThuc = parseInt(soKetThucInput.value) || 0;
     const soKgBanDau = parseFloat(soKgBanDauInput.value) || 0;
@@ -118,31 +125,51 @@ function randomDanhSach() {
         const soRandom = Math.floor(Math.random() * (soKetThuc - soBatDau + 1)) + soBatDau;
         danhSach.push(soRandom);
     }
-    const tongSoKg = danhSach.reduce((a, b) => a + b, 0); // Tổng số kg
 
-    // Tính các giá trị khác
+    // Lưu danh sách random vào dataset của input
+    soRandomInput.dataset.values = danhSach.join(',');
+    soRandomInput.value = danhSach.join(', ');
+
+    // Gọi hàm tính toán để cập nhật kết quả
+    tinhToanKetQua();
+}
+
+// Tính toán lại kết quả
+function tinhToanKetQua() {
+    const danhSach = soRandomInput.dataset.values
+        ? soRandomInput.dataset.values.split(',').map(Number)
+        : [];
+    if (!danhSach.length) {
+        alert('Hãy tạo danh sách random trước!');
+        return;
+    }
+
+    const soKgBanDau = parseFloat(soKgBanDauInput.value) || 0;
     const soKgChet = parseFloat(soKgChetInput.value) || 0;
     const soKgUot = parseFloat(soKgUotInput.value) || 0;
     const soKgNo = parseFloat(soKgNoInput.value) || 0;
+
+    const tongSoKg = danhSach.reduce((a, b) => a + b, 0); // Tổng số kg
+    const tongSoMa = danhSach.length; // Tổng số mã
     const trubi = tongSoMa * 3 * 4.7; // Tính trừ bì
     const soKgThuc = (tongSoKg / 10) - soKgChet - soKgUot - soKgNo - trubi; // Số Kg thực
     const tyLeHaoHut = ((soKgBanDau - soKgThuc) / soKgBanDau) * 100;
 
     // Hiển thị kết quả
-    soRandomInput.value = danhSach.join(', ');
     tongSoMaInput.value = tongSoMa;
-    soKgThucInput.value = soKgThuc.toFixed(1);
+    tongSokgInput.value = (tongSoKg.toFixed(1))/10;
     trubiInput.value = trubi.toFixed(1);
-    ketQuaSoKgChet.value = soKgChet.toFixed(1); // Hiển thị giá trị nhập của Số Kg Chết
-    ketQuaSoKgUot.value = soKgUot.toFixed(1); // Hiển thị giá trị nhập của Số Kg Ướt
-    ketQuaSoKgNo.value = soKgNo.toFixed(1); // Hiển thị giá trị nhập của Số Kg No
+    ketQuaSoKgChet.value = soKgChet.toFixed(1);
+    ketQuaSoKgUot.value = soKgUot.toFixed(1);
+    ketQuaSoKgNo.value = soKgNo.toFixed(1);
+    soKgThucInput.value = soKgThuc.toFixed(1);
     tyLeHaoHutInput.value = tyLeHaoHut.toFixed(1) + '%';
 }
 
+// Gắn sự kiện cho các nút
+btnRandom.addEventListener('click', randomDanhSachVaTinhToan);
+btnRefresh.addEventListener('click', tinhToanKetQua);
 
-        // Gắn sự kiện cho nút Random và Refresh
-        btnRandom.addEventListener('click', randomDanhSach);
-        btnRefresh.addEventListener('click', randomDanhSach);
     </script>
 </body>
 </html>
