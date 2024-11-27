@@ -29,31 +29,26 @@
         <label for="soKgChet">Số Kg Chết:</label>
         <input type="number" id="soKgChet" placeholder="Nhập số kg chết">
     </div>
-
     <div>
         <label for="soKgUot">Số Kg Ướt:</label>
         <input type="number" id="soKgUot" placeholder="Nhập số kg ướt">
     </div>
-
     <div>
         <label for="soKgNo">Số Kg No:</label>
         <input type="number" id="soKgNo" placeholder="Nhập số kg nợ">
+    </div>
+        <div>
+        <label for="tongSoMa">Tổng Số Mã:</label>
+        <input type="text" id="tongSoMa" readonly>
     </div>
     <div>
         <label for="soRandom">Danh sách Random:</label>
         <input type="text" id="soRandom" readonly placeholder="Danh sách random sẽ hiển thị tại đây">
     </div>
-    <div>
-        <label>Reader Speed: <span id="readerSpeedValue">0.5</span></label>
-        <input type="range" id="readerSpeedControl" min="0.3" max="2" step="0.1" value="0.5">
-    </div>
 
-    <!-- Kết quả -->
+    <!-- Kết quả tính toán -->
     <h2>Kết quả:</h2>
-    <div>
-        <label for="tongSoMa">Tổng Số Mã:</label>
-        <input type="text" id="tongSoMa" readonly>
-    </div>
+
     <div>
         <label for="tongSokg">Tổng Số Kg:</label>
         <input type="text" id="tongSokg" readonly>
@@ -62,19 +57,19 @@
         <label for="trubi">Trừ Bì:</label>
         <input type="text" id="trubi" readonly>
     </div>
-      <div>
+    <div>
         <label for="ketQuaSoKgChet">Trừ Chết:</label>
         <input type="text" id="ketQuaSoKgChet" readonly>
     </div>
-      <div>
+    <div>
         <label for="ketQuaSoKgUot">Trừ Ướt:</label>
         <input type="text" id="ketQuaSoKgUot" readonly>
     </div>
-      <div>
+    <div>
         <label for="ketQuaSoKgNo">Trừ No:</label>
         <input type="text" id="ketQuaSoKgNo" readonly>
     </div>
-      <div>
+    <div>
         <label for="soKgThuc">Số Kg Thực:</label>
         <input type="text" id="soKgThuc" readonly>
     </div>
@@ -83,16 +78,31 @@
         <input type="text" id="tyLeHaoHut" readonly>
     </div>
 
-    <!-- Các nút -->
+    <!-- Nút Random và Refresh -->
     <div>
         <button id="btnRandom">Random Danh Sách</button>
-        <button id="btnStartReader">Bắt đầu Đọc</button>
-        <button id="btnStopReader" disabled>Dừng Đọc</button>
+        <button id="btnRefresh">Tính Lại Kết Quả</button>
     </div>
 
-    <!-- Script -->
+    <!-- Giao diện Number Reader -->
+    <div>
+        <label>Speed: <span id="speedValue">0.5</span></label>
+        <input type="range" id="speedControl" min="0.3" max="2" step="0.1" value="0.5">
+    </div>
+    <div class="buttons">
+        <button id="startPauseBtn">Start</button>
+        <button id="stopBtn" disabled>Stop</button>
+    </div>
+    <div class="reader">
+        <div class="box previous" id="previousNumber"></div>
+        <div class="box current" id="currentNumber"></div>
+        <div class="box next" id="nextNumber"></div>
+    </div>
+
+    <!-- Script xử lý -->
     <script>
-        const soBatDauInput = document.getElementById('soBatDau');
+        // Phần random và tính toán cũ
+       const soBatDauInput = document.getElementById('soBatDau');
         const soKetThucInput = document.getElementById('soKetThuc');
         const soKgBanDauInput = document.getElementById('soKgBanDau');
         const soKgBinhQuanInput = document.getElementById('soKgBinhQuan');
@@ -172,56 +182,110 @@ function tinhToanKetQua() {
 btnRandom.addEventListener('click', randomDanhSachVaTinhToan);
 btnRefresh.addEventListener('click', tinhToanKetQua);
 
-        // Bắt đầu đọc
-        function startReader() {
-            if (!danhSach.length) {
-                alert('Hãy tạo danh sách random trước!');
-                return;
+        // Number Reader Logic
+        const startPauseBtn = document.getElementById("startPauseBtn");
+        const stopBtn = document.getElementById("stopBtn");
+        const speedControl = document.getElementById("speedControl");
+        const speedValue = document.getElementById("speedValue");
+        const previousNumberDiv = document.getElementById("previousNumber");
+        const currentNumberDiv = document.getElementById("currentNumber");
+        const nextNumberDiv = document.getElementById("nextNumber");
+
+        let numbers = [];
+        let currentIndex = 0;
+        let isReading = false;
+        let isPaused = false;
+
+        speedControl.addEventListener("input", () => {
+            speedValue.textContent = speedControl.value;
+        });
+
+        startPauseBtn.addEventListener("click", () => {
+            if (!isReading) {
+                if (numbers.length === 0) {
+                    const input = document.getElementById("soRandom").value.trim();
+                    if (!input) {
+                        alert("Hãy tạo danh sách random trước!");
+                        return;
+                    }
+                    numbers = input.split(",").map(num => num.trim());
+                }
+                startReading();
+            } else if (isPaused) {
+                resumeReading();
+            } else {
+                pauseReading();
             }
+        });
 
-            isReading = true;
-            btnStartReader.disabled = true;
-            btnStopReader.disabled = false;
+        stopBtn.addEventListener("click", stopReading);
 
-            currentReaderIndex = 0;
-            readNextNumber();
+        function updateUI() {
+            const previousNumber = numbers[currentIndex - 1] || "";
+            const currentNumber = numbers[currentIndex] || "";
+            const nextNumber = numbers[currentIndex + 1] || "";
+
+            previousNumberDiv.textContent = previousNumber;
+            currentNumberDiv.textContent = currentNumber;
+            nextNumberDiv.textContent = nextNumber;
         }
 
-        // Đọc từng số
-        function readNextNumber() {
-            if (!isReading || currentReaderIndex >= danhSach.length) {
-                stopReader();
+        function startReading() {
+            isReading = true;
+            isPaused = false;
+            startPauseBtn.textContent = "Pause";
+            stopBtn.disabled = false;
+
+            updateUI();
+            readNumber();
+        }
+
+        function pauseReading() {
+            isPaused = true;
+            startPauseBtn.textContent = "Resume";
+            window.speechSynthesis.cancel();
+        }
+
+        function resumeReading() {
+            isPaused = false;
+            startPauseBtn.textContent = "Pause";
+            readNumber();
+        }
+
+        function stopReading() {
+            isReading = false;
+            isPaused = false;
+            currentIndex = 0;
+            numbers = [];
+            updateUI();
+
+            startPauseBtn.textContent = "Start";
+            stopBtn.disabled = true;
+            window.speechSynthesis.cancel();
+        }
+
+        function readNumber() {
+            if (isPaused || currentIndex >= numbers.length) {
                 return;
             }
 
-            const currentNumber = danhSach[currentReaderIndex];
+            const currentNumber = numbers[currentIndex];
             const utterance = new SpeechSynthesisUtterance(currentNumber.toString());
-            utterance.rate = parseFloat(readerSpeedControl.value);
+            utterance.rate = parseFloat(speedControl.value);
 
             utterance.onend = () => {
-                currentReaderIndex++;
-                readNextNumber();
+                currentIndex++;
+                updateUI();
+
+                if (currentIndex < numbers.length) {
+                    readNumber();
+                } else {
+                    stopReading();
+                }
             };
 
             window.speechSynthesis.speak(utterance);
         }
-
-        // Dừng đọc
-        function stopReader() {
-            isReading = false;
-            btnStartReader.disabled = false;
-            btnStopReader.disabled = true;
-            window.speechSynthesis.cancel();
-        }
-
-        // Sự kiện
-        btnRandom.addEventListener('click', randomDanhSach);
-        btnStartReader.addEventListener('click', startReader);
-        btnStopReader.addEventListener('click', stopReader);
-
-        readerSpeedControl.addEventListener('input', () => {
-            readerSpeedValue.textContent = readerSpeedControl.value;
-        });
     </script>
 </body>
 </html>
