@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random & Tính Toán</title>
+</head>
+<body>
+    <h1>Form Random & Tính Toán</h1>
+
+    <!-- Các ô Input -->
+    <div>
+        <label for="soBatDau">Số đầu Random:</label>
+        <input type="number" id="soBatDau" placeholder="Nhập số đầu">
+    </div>
+    <div>
+        <label for="soKetThuc">Số cuối Random:</label>
+        <input type="number" id="soKetThuc" placeholder="Nhập số cuối">
+    </div>
+    <div>
+        <label for="soKgBanDau">Số Kg Ban Đầu:</label>
+        <input type="number" id="soKgBanDau" placeholder="Nhập số kg ban đầu">
+    </div>
+    <div>
+        <label for="soKgBinhQuan">Số Kg Bình Quân:</label>
+        <input type="number" id="soKgBinhQuan" placeholder="Nhập số kg bình quân">
+    </div>
+    <div>
+        <label for="soKgChet">Số Kg Chết:</label>
+        <input type="number" id="soKgChet" placeholder="Nhập số kg chết">
+    </div>
+
+    <div>
+        <label for="soKgUot">Số Kg Ướt:</label>
+        <input type="number" id="soKgUot" placeholder="Nhập số kg ướt">
+    </div>
+
+    <div>
+        <label for="soKgNo">Số Kg No:</label>
+        <input type="number" id="soKgNo" placeholder="Nhập số kg nợ">
+    </div>
+    <div>
+        <label for="soRandom">Danh sách Random:</label>
+        <input type="text" id="soRandom" readonly placeholder="Danh sách random sẽ hiển thị tại đây">
+    </div>
+    <div>
+        <label>Reader Speed: <span id="readerSpeedValue">0.5</span></label>
+        <input type="range" id="readerSpeedControl" min="0.3" max="2" step="0.1" value="0.5">
+    </div>
+
+    <!-- Kết quả -->
+    <h2>Kết quả:</h2>
+    <div>
+        <label for="tongSoMa">Tổng Số Mã:</label>
+        <input type="text" id="tongSoMa" readonly>
+    </div>
+    <div>
+        <label for="tongSokg">Tổng Số Kg:</label>
+        <input type="text" id="tongSokg" readonly>
+    </div>
+    <div>
+        <label for="trubi">Trừ Bì:</label>
+        <input type="text" id="trubi" readonly>
+    </div>
+      <div>
+        <label for="ketQuaSoKgChet">Trừ Chết:</label>
+        <input type="text" id="ketQuaSoKgChet" readonly>
+    </div>
+      <div>
+        <label for="ketQuaSoKgUot">Trừ Ướt:</label>
+        <input type="text" id="ketQuaSoKgUot" readonly>
+    </div>
+      <div>
+        <label for="ketQuaSoKgNo">Trừ No:</label>
+        <input type="text" id="ketQuaSoKgNo" readonly>
+    </div>
+      <div>
+        <label for="soKgThuc">Số Kg Thực:</label>
+        <input type="text" id="soKgThuc" readonly>
+    </div>
+    <div>
+        <label for="tyLeHaoHut">Tỷ Lệ Hao Hụt (%):</label>
+        <input type="text" id="tyLeHaoHut" readonly>
+    </div>
+
+    <!-- Các nút -->
+    <div>
+        <button id="btnRandom">Random Danh Sách</button>
+        <button id="btnStartReader">Bắt đầu Đọc</button>
+        <button id="btnStopReader" disabled>Dừng Đọc</button>
+    </div>
+
+    <!-- Script -->
+    <script>
+        const soBatDauInput = document.getElementById('soBatDau');
+        const soKetThucInput = document.getElementById('soKetThuc');
+        const soKgBanDauInput = document.getElementById('soKgBanDau');
+        const soKgBinhQuanInput = document.getElementById('soKgBinhQuan');
+        const soKgChetInput = document.getElementById('soKgChet');
+        const soKgUotInput = document.getElementById('soKgUot');
+        const soKgNoInput = document.getElementById('soKgNo');
+        const soRandomInput = document.getElementById('soRandom');
+        const tongSoMaInput = document.getElementById('tongSoMa');
+        const tongSokgInput = document.getElementById('tongSokg');
+        const soKgThucInput = document.getElementById('soKgThuc');
+        const trubiInput = document.getElementById('trubi');
+        const tyLeHaoHutInput = document.getElementById('tyLeHaoHut');
+        const btnRandom = document.getElementById('btnRandom');
+        const btnRefresh = document.getElementById('btnRefresh');
+
+// Random danh sách và tính toán
+function randomDanhSachVaTinhToan() {
+    const soBatDau = parseInt(soBatDauInput.value) || 0;
+    const soKetThuc = parseInt(soKetThucInput.value) || 0;
+    const soKgBanDau = parseFloat(soKgBanDauInput.value) || 0;
+    const soKgBinhQuan = parseFloat(soKgBinhQuanInput.value) || 1; // Tránh chia 0
+
+    if (soBatDau >= soKetThuc) {
+        alert('Số bắt đầu phải nhỏ hơn số kết thúc!');
+        return;
+    }
+
+    // Random danh sách
+    const tongSoMa = Math.ceil((soKgBanDau - soKgBanDau * 0.05) / soKgBinhQuan / 30); // Tính tổng số mã
+    const danhSach = [];
+    for (let i = 0; i < tongSoMa; i++) {
+        const soRandom = Math.floor(Math.random() * (soKetThuc - soBatDau + 1)) + soBatDau;
+        danhSach.push(soRandom);
+    }
+
+    // Lưu danh sách random vào dataset của input
+    soRandomInput.dataset.values = danhSach.join(',');
+    soRandomInput.value = danhSach.join(', ');
+
+    // Gọi hàm tính toán để cập nhật kết quả
+    tinhToanKetQua();
+}
+
+// Tính toán lại kết quả
+function tinhToanKetQua() {
+    const danhSach = soRandomInput.dataset.values
+        ? soRandomInput.dataset.values.split(',').map(Number)
+        : [];
+    if (!danhSach.length) {
+        alert('Hãy tạo danh sách random trước!');
+        return;
+    }
+
+    const soKgBanDau = parseFloat(soKgBanDauInput.value) || 0;
+    const soKgChet = parseFloat(soKgChetInput.value) || 0;
+    const soKgUot = parseFloat(soKgUotInput.value) || 0;
+    const soKgNo = parseFloat(soKgNoInput.value) || 0;
+
+    const tongSoKg = danhSach.reduce((a, b) => a + b, 0); // Tổng số kg
+    const tongSoMa = danhSach.length; // Tổng số mã
+    const trubi = tongSoMa * 3 * 4.7; // Tính trừ bì
+    const soKgThuc = (tongSoKg / 10) - soKgChet - soKgUot - soKgNo - trubi; // Số Kg thực
+    const tyLeHaoHut = ((soKgBanDau - soKgThuc) / soKgBanDau) * 100;
+
+    // Hiển thị kết quả
+    tongSoMaInput.value = tongSoMa;
+    tongSokgInput.value = (tongSoKg.toFixed(1))/10;
+    trubiInput.value = trubi.toFixed(1);
+    ketQuaSoKgChet.value = soKgChet.toFixed(1);
+    ketQuaSoKgUot.value = soKgUot.toFixed(1);
+    ketQuaSoKgNo.value = soKgNo.toFixed(1);
+    soKgThucInput.value = soKgThuc.toFixed(1);
+    tyLeHaoHutInput.value = tyLeHaoHut.toFixed(1) + '%';
+}
+
+// Gắn sự kiện cho các nút
+btnRandom.addEventListener('click', randomDanhSachVaTinhToan);
+btnRefresh.addEventListener('click', tinhToanKetQua);
+
+        // Bắt đầu đọc
+        function startReader() {
+            if (!danhSach.length) {
+                alert('Hãy tạo danh sách random trước!');
+                return;
+            }
+
+            isReading = true;
+            btnStartReader.disabled = true;
+            btnStopReader.disabled = false;
+
+            currentReaderIndex = 0;
+            readNextNumber();
+        }
+
+        // Đọc từng số
+        function readNextNumber() {
+            if (!isReading || currentReaderIndex >= danhSach.length) {
+                stopReader();
+                return;
+            }
+
+            const currentNumber = danhSach[currentReaderIndex];
+            const utterance = new SpeechSynthesisUtterance(currentNumber.toString());
+            utterance.rate = parseFloat(readerSpeedControl.value);
+
+            utterance.onend = () => {
+                currentReaderIndex++;
+                readNextNumber();
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Dừng đọc
+        function stopReader() {
+            isReading = false;
+            btnStartReader.disabled = false;
+            btnStopReader.disabled = true;
+            window.speechSynthesis.cancel();
+        }
+
+        // Sự kiện
+        btnRandom.addEventListener('click', randomDanhSach);
+        btnStartReader.addEventListener('click', startReader);
+        btnStopReader.addEventListener('click', stopReader);
+
+        readerSpeedControl.addEventListener('input', () => {
+            readerSpeedValue.textContent = readerSpeedControl.value;
+        });
+    </script>
+</body>
+</html>
