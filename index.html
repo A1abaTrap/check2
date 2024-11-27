@@ -70,6 +70,10 @@
         <input type="text" id="ketQuaSoKgNo" readonly>
     </div>
     <div>
+        <label for="socon">Số Con:</label>
+        <input type="text" id="socon" readonly>
+    </div>
+    <div>
         <label for="soKgThuc">Số Kg Thực:</label>
         <input type="text" id="soKgThuc" readonly>
     </div>
@@ -113,6 +117,7 @@
         const tongSoMaInput = document.getElementById('tongSoMa');
         const tongSokgInput = document.getElementById('tongSokg');
         const soKgThucInput = document.getElementById('soKgThuc');
+        const soConInput = document.getElementById('socon'); 
         const trubiInput = document.getElementById('trubi');
         const tyLeHaoHutInput = document.getElementById('tyLeHaoHut');
         const btnRandom = document.getElementById('btnRandom');
@@ -160,11 +165,11 @@ function tinhToanKetQua() {
     const soKgChet = parseFloat(soKgChetInput.value) || 0;
     const soKgUot = parseFloat(soKgUotInput.value) || 0;
     const soKgNo = parseFloat(soKgNoInput.value) || 0;
-
     const tongSoKg = danhSach.reduce((a, b) => a + b, 0); // Tổng số kg
     const tongSoMa = danhSach.length; // Tổng số mã
     const trubi = tongSoMa * 3 * 4.7; // Tính trừ bì
     const soKgThuc = (tongSoKg / 10) - soKgChet - soKgUot - soKgNo - trubi; // Số Kg thực
+    const socon = soKgThuc/soKgBinhQuanInput.value;
     const tyLeHaoHut = ((soKgBanDau - soKgThuc) / soKgBanDau) * 100;
 
     // Hiển thị kết quả
@@ -174,6 +179,7 @@ function tinhToanKetQua() {
     ketQuaSoKgChet.value = soKgChet.toFixed(1);
     ketQuaSoKgUot.value = soKgUot.toFixed(1);
     ketQuaSoKgNo.value = soKgNo.toFixed(1);
+    soConInput.value = socon.toFixed(0);
     soKgThucInput.value = soKgThuc.toFixed(1);
     tyLeHaoHutInput.value = tyLeHaoHut.toFixed(1) + '%';
 }
